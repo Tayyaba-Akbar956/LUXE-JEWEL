@@ -1,0 +1,125 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env.local
+.env.production
+.env.staging
+
+# Build outputs
+.next/
+dist/
+out/
+
+# Database
+*.db
+*.db-journal
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+.directory
+*.nfs
+.nfs0000*
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary folders
+tmp/
+temp/
+
+# Next.js
+.next
+.cache
+
+# Next.js build output
+build/
+
+# Production build
+public/build/
+
+# Debug files
+debug.log*
+*.swp
+*.swo
+
+# Testing
+coverage/
+.nyc_output/
+
+# VS Code
+.vscode/
+
+# JetBrains IDEs
+.idea/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Vim
+*.un~
+Session.vim
+.netrwhist
+*~
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+# Linux
+*~
+*.swp
+*.swo
+.#*
+.~lock.*
+
+# Yarn
+.yarn/
+.pnp.*
+.pnp.js
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Sensitive data
+*.key
+*.pem
+*.crt
+*.cert
+creds.json
+credentials.json
+
+# Supabase
+supabase/
+node_modules
