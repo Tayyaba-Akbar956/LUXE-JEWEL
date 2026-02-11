@@ -198,10 +198,10 @@ export default function DashboardPage() {
                                   <td className="py-4 text-champagne-200">${parseFloat(String(order.total_amount)).toFixed(2)}</td>
                                   <td className="py-4">
                                     <span className={`px-2 py-1 rounded text-xs ${order.status === 'delivered'
-                                        ? 'bg-green-900/30 text-green-400'
-                                        : order.status === 'shipped'
-                                          ? 'bg-blue-900/30 text-blue-400'
-                                          : 'bg-yellow-900/30 text-yellow-400'
+                                      ? 'bg-green-900/30 text-green-400'
+                                      : order.status === 'shipped'
+                                        ? 'bg-blue-900/30 text-blue-400'
+                                        : 'bg-yellow-900/30 text-yellow-400'
                                       }`}>
                                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                     </span>
@@ -250,10 +250,10 @@ export default function DashboardPage() {
                                 <td className="py-4 text-champagne-200">${parseFloat(String(order.total_amount)).toFixed(2)}</td>
                                 <td className="py-4">
                                   <span className={`px-2 py-1 rounded text-xs ${order.status === 'delivered'
-                                      ? 'bg-green-900/30 text-green-400'
-                                      : order.status === 'shipped'
-                                        ? 'bg-blue-900/30 text-blue-400'
-                                        : 'bg-yellow-900/30 text-yellow-400'
+                                    ? 'bg-green-900/30 text-green-400'
+                                    : order.status === 'shipped'
+                                      ? 'bg-blue-900/30 text-blue-400'
+                                      : 'bg-yellow-900/30 text-yellow-400'
                                     }`}>
                                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                   </span>
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                             <input
                               type="text"
                               defaultValue={user.user_metadata?.full_name?.split(' ')[0] || ''}
-                              className="w-full px-4 py-3 bg-luxury-dark border border-gold-500/30 rounded-lg text-champagne-200 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                              className="input-luxury rounded-lg"
                             />
                           </div>
                           <div>
@@ -287,7 +287,7 @@ export default function DashboardPage() {
                             <input
                               type="text"
                               defaultValue={user.user_metadata?.full_name?.split(' ')[1] || ''}
-                              className="w-full px-4 py-3 bg-luxury-dark border border-gold-500/30 rounded-lg text-champagne-200 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                              className="input-luxury rounded-lg"
                             />
                           </div>
                         </div>
@@ -296,7 +296,7 @@ export default function DashboardPage() {
                           <input
                             type="email"
                             defaultValue={user.email || ''}
-                            className="w-full px-4 py-3 bg-luxury-dark border border-gold-500/30 rounded-lg text-champagne-200 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                            className="input-luxury rounded-lg"
                           />
                         </div>
                         <button className="btn-luxury mt-4">Update Information</button>
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                             <label className="block text-silver-400 text-sm mb-2">Current Password</label>
                             <input
                               type="password"
-                              className="w-full px-4 py-3 bg-luxury-dark border border-gold-500/30 rounded-lg text-champagne-200 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                              className="input-luxury rounded-lg"
                             />
                           </div>
                           <div>

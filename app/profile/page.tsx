@@ -170,7 +170,7 @@ export default function ProfilePage() {
                         type="text"
                         value={editForm.fullName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-luxury-dark border border-gold-500/30 rounded-lg text-champagne-200 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                        className="input-luxury rounded-lg"
                       />
                     </div>
 

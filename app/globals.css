@@ -121,6 +121,7 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 
@@ -128,6 +129,7 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -135,6 +137,7 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 
@@ -254,14 +257,24 @@
   /* Luxury Input */
   .input-luxury {
     @apply w-full px-4 py-3 border border-gold-500/30;
-    background: rgba(35, 30, 25, 0.8);
-    @apply text-foreground placeholder:text-muted-foreground;
+    background: #121212 !important;
+    @apply text-champagne-200 placeholder:text-muted-foreground;
     @apply rounded-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500;
     @apply transition-all duration-200;
   }
 
   .input-luxury:focus {
-    background: rgba(45, 38, 30, 0.9);
+    background: #1a1a1a !important;
+  }
+
+  /* Browser Autofill Overrides */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
+    -webkit-text-fill-color: #F7E7CE !important;
+    transition: background-color 5000s ease-in-out 0s;
   }
 }
 

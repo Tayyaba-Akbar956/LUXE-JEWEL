@@ -23,3 +23,5 @@ async function listCerebrasModels() {
 }
 
 listCerebrasModels();
+
+export { };

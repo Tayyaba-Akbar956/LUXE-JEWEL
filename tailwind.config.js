@@ -66,6 +66,7 @@ module.exports = {
           400: '#E8C582',
           500: '#E0B45C',
         },
+        'luxury-dark': '#121212',
         // Theme Colors
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
