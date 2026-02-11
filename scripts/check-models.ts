@@ -18,11 +18,11 @@ async function listModels() {
             return;
         }
 
-        data.models.forEach(m => {
+        data.models.forEach((m: any) => {
             const methods = m.supportedGenerationMethods.join(', ');
             console.log(`- ${m.name} [${methods}]`);
         });
-    } catch (e) {
+    } catch (e: any) {
         console.error('Fetch failed:', e.message);
     }
 }

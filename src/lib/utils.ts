@@ -18,7 +18,7 @@ export function calculateDiscountPercentage(price: number, comparePrice?: number
   if (!comparePrice || comparePrice <= price) {
     return null;
   }
-  
+
   return Math.round(((comparePrice - price) / comparePrice) * 100);
 }
 
@@ -28,7 +28,7 @@ export function debounce<T extends (...args: any[]) => any>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout;
-  return function (...args: Parameters<T>) {
+  return function (this: any, ...args: Parameters<T>) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(this, args), wait);
   };
@@ -40,11 +40,11 @@ export function throttle<T extends (...args: any[]) => any>(
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  return function (...args: Parameters<T>) {
+  return function (this: any, ...args: Parameters<T>) {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 }

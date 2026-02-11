@@ -11,22 +11,22 @@ interface AIRecommendationsProps {
   count?: number;     // Number of recommendations to show
 }
 
-export default function AIRecommendations({ 
-  productId, 
-  userId, 
+export default function AIRecommendations({
+  productId,
+  userId,
   title = 'Recommended For You',
-  count = 4 
+  count = 4
 }: AIRecommendationsProps) {
   const [recommendations, setRecommendations] = useState<any[]>([]);
-  
+
   useEffect(() => {
     // In a real implementation, this would call an AI service
     // to get personalized recommendations based on user behavior
     // and product similarity
-    
+
     // For demo purposes, we'll return related products or random products
-    let recs;
-    
+    let recs: any[] = [];
+
     if (productId) {
       // Get products in the same category as the specified product
       const currentProduct = products.find(p => p.id === productId);
@@ -48,7 +48,7 @@ export default function AIRecommendations({
         .sort(() => 0.5 - Math.random())
         .slice(0, count);
     }
-    
+
     setRecommendations(recs);
   }, [productId, userId, count]);
 
