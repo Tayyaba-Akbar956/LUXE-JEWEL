@@ -204,9 +204,8 @@ export default function ProductDetailPage() {
                             </div>
 
                             {/* Trust */}
-                            <div className="mt-8 grid grid-cols-3 gap-4">
+                            <div className="mt-8 grid grid-cols-2 gap-4">
                                 {[
-                                    { icon: '🚚', text: 'Free Shipping' },
                                     { icon: '↩️', text: '30-Day Returns' },
                                     { icon: '💎', text: 'Quality Assured' },
                                 ].map((item, i) => (

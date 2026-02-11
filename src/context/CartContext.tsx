@@ -50,8 +50,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     }, [items, isLoaded]);
 
-    const addItem = (product: Product, quantity: number = 1) => {
+    const addItem = (product: any, quantity: number = 1) => {
         if (!product || !product.id) return;
+
+        // Normalization: Ensure camelCase properties for consistent UI rendering
+        const normalizedProduct: Product = {
+            ...product,
+            featuredImage: product.featuredImage || product.featured_image || '',
+            comparePrice: product.comparePrice || product.compare_price || 0,
+            shortDescription: product.shortDescription || product.short_description || product.description || '',
+            ratingAverage: product.ratingAverage || product.rating_average || 0,
+            ratingCount: product.ratingCount || product.rating_count || 0,
+            inStock: product.inStock ?? product.in_stock ?? true,
+        };
 
         setItems(prev => {
             const existing = prev.find(item => item.productId === product.id);
@@ -62,7 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                         : item
                 );
             }
-            return [...prev, { productId: product.id, quantity, product }];
+            return [...prev, { productId: product.id, quantity, product: normalizedProduct }];
         });
     };
 

@@ -3,8 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface ProductCardProps {
   product: any;
@@ -13,6 +15,8 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addItem, isInCart } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
+  const { user } = useAuth();
+  const router = useRouter();
 
   // Handle both camelCase (mock) and snake_case (Supabase)
   const id = product.id;
@@ -33,12 +37,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     addItem(product);
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     toggleItem(product);
   };
 

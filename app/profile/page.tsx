@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [profile, setProfile] = useState({
     fullName: '',
     email: '',
@@ -53,7 +53,6 @@ export default function ProfilePage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real implementation, we would update the user profile in Supabase
     setProfile({
       ...profile,
       fullName: editForm.fullName,
@@ -67,7 +66,7 @@ export default function ProfilePage() {
       <div className="flex min-h-screen flex-col bg-luxury-black">
         <Header />
         <main className="flex-grow flex items-center justify-center">
-          <div className="text-champagne-200">Loading...</div>
+          <div className="animate-spin h-8 w-8 border-4 border-gold-500 border-t-transparent rounded-full" />
         </main>
         <Footer />
       </div>
@@ -120,18 +119,28 @@ export default function ProfilePage() {
                 <p className="text-silver-500 text-sm">{profile.email}</p>
 
                 <div className="mt-6 pt-6 border-t border-gold-500/20">
-                  <h3 className="font-heading text-lg text-gold-500 mb-3">Account Actions</h3>
+                  <h3 className="font-heading text-lg text-gold-500 mb-3">Quick Links</h3>
                   <div className="space-y-2">
-                    <Link href="/orders" className="block btn-luxury-outline py-2 text-center">
-                      My Orders
+                    <Link href="/dashboard" className="block btn-luxury-outline py-2 text-center">
+                      My Dashboard
                     </Link>
                     <Link href="/wishlist" className="block btn-luxury-outline py-2 text-center">
                       My Wishlist
                     </Link>
-                    <Link href="/settings" className="block btn-luxury-outline py-2 text-center">
-                      Account Settings
+                    <Link href="/cart" className="block btn-luxury-outline py-2 text-center">
+                      My Cart
                     </Link>
                   </div>
+                </div>
+
+                {/* Sign Out Button */}
+                <div className="mt-6 pt-6 border-t border-gold-500/20">
+                  <button
+                    onClick={signOut}
+                    className="w-full px-4 py-3 text-red-500 hover:bg-red-900/20 rounded-lg transition-colors border border-red-500/30"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               </div>
             </div>
@@ -206,63 +215,22 @@ export default function ProfilePage() {
                       <h3 className="text-sm font-medium text-silver-400">Email Address</h3>
                       <p className="text-champagne-200">{profile.email}</p>
                     </div>
-
-                    <div>
-                      <h3 className="text-sm font-medium text-silver-400">Member Since</h3>
-                      <p className="text-champagne-200">
-                        {user && new Date(user.id).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </p>
-                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Addresses Section */}
+              {/* Addresses Section — Empty State */}
               <div className="card-luxury p-6 mt-6">
                 <h2 className="font-heading text-xl text-champagne-200 mb-6">Addresses</h2>
                 <div className="space-y-4">
-                  <div className="border border-gold-500/30 rounded-lg p-4">
-                    <h3 className="font-heading text-lg text-champagne-200">Default Shipping Address</h3>
-                    <p className="text-silver-500 mt-2">
-                      123 Luxury Avenue<br />
-                      Beverly Hills, CA 90210<br />
-                      United States
-                    </p>
-                    <button className="mt-3 text-gold-500 hover:text-gold-400 transition-colors text-sm">
-                      Edit Address
-                    </button>
+                  <div className="text-center py-8">
+                    <svg className="w-12 h-12 mx-auto text-silver-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <p className="text-silver-500 text-sm">No addresses saved yet.</p>
+                    <p className="text-silver-600 text-xs mt-1">Your shipping address will be saved when you place an order.</p>
                   </div>
-
-                  <button className="w-full py-3 border border-dashed border-gold-500/30 rounded-lg text-gold-500 hover:bg-gold-500/10 transition-colors">
-                    + Add New Address
-                  </button>
-                </div>
-              </div>
-
-              {/* Payment Methods Section */}
-              <div className="card-luxury p-6 mt-6">
-                <h2 className="font-heading text-xl text-champagne-200 mb-6">Payment Methods</h2>
-                <div className="space-y-4">
-                  <div className="border border-gold-500/30 rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-heading text-lg text-champagne-200">Visa ending in 4242</h3>
-                        <p className="text-silver-500">Expires 12/2025</p>
-                      </div>
-                      <div className="bg-gray-800 px-3 py-1 rounded text-sm">Default</div>
-                    </div>
-                    <button className="mt-3 text-gold-500 hover:text-gold-400 transition-colors text-sm">
-                      Edit Payment Method
-                    </button>
-                  </div>
-
-                  <button className="w-full py-3 border border-dashed border-gold-500/30 rounded-lg text-gold-500 hover:bg-gold-500/10 transition-colors">
-                    + Add New Payment Method
-                  </button>
                 </div>
               </div>
             </div>

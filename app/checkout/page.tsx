@@ -7,15 +7,26 @@ import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { processMockPayment } from '@/lib/mockPayment';
 import { supabase } from '@/lib/supabase';
 
 export default function CheckoutPage() {
     const router = useRouter();
     const { items, getSubtotal, clearCart } = useCart();
+    const { user: authUser, loading: authLoading } = useAuth();
     const [isProcessing, setIsProcessing] = useState(false);
     const [step, setStep] = useState<'shipping' | 'payment' | 'complete'>('shipping');
     const [userId, setUserId] = useState<string | null>(null);
+    const [finalTotal, setFinalTotal] = useState(0);
+    const [finalShipping, setFinalShipping] = useState(0);
+
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!authLoading && !authUser) {
+            router.push('/login');
+        }
+    }, [authUser, authLoading, router]);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -95,6 +106,8 @@ export default function CheckoutPage() {
                 const result = await response.json();
 
                 if (response.ok) {
+                    setFinalTotal(total);
+                    setFinalShipping(shipping);
                     setStep('complete');
                     clearCart();
                 } else {
@@ -111,9 +124,22 @@ export default function CheckoutPage() {
         }
     };
 
+    useEffect(() => {
+        if (items.length === 0 && step !== 'complete') {
+            router.push('/cart');
+        }
+    }, [items, step, router]);
+
     if (items.length === 0 && step !== 'complete') {
-        router.push('/cart');
-        return null;
+        return (
+            <div className="flex min-h-screen flex-col bg-luxury-black">
+                <Header />
+                <main className="flex-grow flex items-center justify-center">
+                    <div className="animate-spin h-8 w-8 border-4 border-gold-500 border-t-transparent rounded-full" />
+                </main>
+                <Footer />
+            </div>
+        );
     }
 
     // Order Complete View
@@ -136,8 +162,9 @@ export default function CheckoutPage() {
                         </p>
                         <div className="card-luxury p-6 mb-8">
                             <h2 className="font-heading text-sm uppercase tracking-wider text-gold-500 mb-4">Order Total</h2>
-                            <p className="font-display text-3xl text-gold-500">${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                            <p className="text-xs text-silver-500 mt-2">Shipping to: {shippingInfo.city}, {shippingInfo.state}</p>
+                            <p className="font-display text-3xl text-gold-500">${finalTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                            <p className="text-xs text-silver-500 mt-2">Shipping: {finalShipping === 0 ? 'Free' : `$${finalShipping.toFixed(2)}`}</p>
+                            <p className="text-xs text-silver-500 mt-1">Shipping to: {shippingInfo.city}, {shippingInfo.state}</p>
                         </div>
                         <Link href="/products" className="btn-luxury">
                             Continue Shopping

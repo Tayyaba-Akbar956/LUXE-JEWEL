@@ -6,9 +6,44 @@ import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CartPage() {
     const { items, removeItem, updateQuantity, getSubtotal, clearCart, getItemCount } = useCart();
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen flex-col bg-luxury-black">
+                <Header />
+                <main className="flex-grow flex items-center justify-center">
+                    <div className="animate-spin h-8 w-8 border-4 border-gold-500 border-t-transparent rounded-full" />
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="flex min-h-screen flex-col bg-luxury-black">
+                <Header />
+                <main className="flex-grow flex items-center justify-center">
+                    <div className="text-center p-8">
+                        <div className="w-24 h-24 mx-auto mb-6 rounded-full border border-gold-500/30 flex items-center justify-center">
+                            <svg className="w-12 h-12 text-gold-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                        </div>
+                        <h1 className="font-display text-3xl text-champagne-200 mb-4">Sign In Required</h1>
+                        <p className="text-silver-500 mb-6">Please sign in to view your shopping cart.</p>
+                        <Link href="/login" className="btn-luxury">Sign In</Link>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
 
     const subtotal = getSubtotal();
     const shipping = subtotal > 500 ? 0 : 25;

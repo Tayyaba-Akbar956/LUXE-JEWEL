@@ -83,8 +83,8 @@ const Footer = () => {
               © {new Date().getFullYear()} LuxeJewel. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
-              <Link href="/privacy" className="text-silver-600 hover:text-gold-500 transition-colors text-xs">Privacy Policy</Link>
-              <Link href="/terms" className="text-silver-600 hover:text-gold-500 transition-colors text-xs">Terms of Service</Link>
+              <Link href="#" className="text-silver-600 hover:text-gold-500 transition-colors text-xs">Privacy Policy</Link>
+              <Link href="#" className="text-silver-600 hover:text-gold-500 transition-colors text-xs">Terms of Service</Link>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-silver-600 text-xs">Secure Payments</span>

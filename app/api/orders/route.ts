@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: Request) {
   try {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const orderId = searchParams.get('orderId');
 
     if (orderId) {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('orders')
         .select('*, order_items(*, products(*))')
         .eq('id', parseInt(orderId))
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
       return NextResponse.json(data);
     } else if (userId) {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('orders')
         .select('*')
         .eq('user_id', userId)
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
     // 1. Insert the order
-    const { data: orderData, error: orderError } = await supabase
+    const { data: orderData, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert([{
         user_id: userId || null,
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       price_at_purchase: item.price
     }));
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(orderItemsRecord);
 
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
 
     // 3. Clear cart if userId is present
     if (userId) {
-      await supabase.from('shopping_cart').delete().eq('user_id', userId);
+      await supabaseAdmin.from('shopping_cart').delete().eq('user_id', userId);
     }
 
     return NextResponse.json(orderData, { status: 201 });
@@ -119,7 +119,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Order ID and status are required' }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('orders')
       .update({
         status: status,

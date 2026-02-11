@@ -25,8 +25,7 @@ const nextConfig = {
     ],
     formats: ['image/webp', 'image/avif'],
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    contentDispositionType: 'inline',
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

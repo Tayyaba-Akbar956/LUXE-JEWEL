@@ -54,8 +54,19 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         }
     }, [ids, products, isLoaded]);
 
-    const addItem = (product: Product) => {
+    const addItem = (product: any) => {
         if (!product || !product.id) return;
+
+        // Normalization: Ensure camelCase properties for consistent UI rendering
+        const normalizedProduct: Product = {
+            ...product,
+            featuredImage: product.featuredImage || product.featured_image || '',
+            comparePrice: product.comparePrice || product.compare_price || 0,
+            shortDescription: product.shortDescription || product.short_description || product.description || '',
+            ratingAverage: product.ratingAverage || product.rating_average || 0,
+            ratingCount: product.ratingCount || product.rating_count || 0,
+            inStock: product.inStock ?? product.in_stock ?? true,
+        };
 
         setIds(prev => {
             if (prev.includes(product.id)) return prev;
@@ -64,7 +75,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
         setProducts(prev => ({
             ...prev,
-            [product.id]: product
+            [product.id]: normalizedProduct
         }));
     };
 
@@ -92,7 +103,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     };
 
     const getItemCount = () => {
-        return ids.length;
+        return getWishlistProducts().length;
     };
 
     const clearWishlist = () => {

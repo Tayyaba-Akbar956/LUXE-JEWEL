@@ -18,7 +18,6 @@ interface AuthContextType {
   user: User | null;
   signUp: (email: string, password: string, fullName: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
-  signInWithGoogle: () => Promise<any>;
   signOut: () => Promise<void>;
   forgotPassword: (email: string) => Promise<any>;
   loading: boolean;
@@ -113,18 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data;
   };
 
-  const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
-      }
-    });
 
-    if (error) {
-      throw new Error(error.message);
-    }
-  };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -137,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const forgotPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`
+      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/update-password` : ''
     });
 
     if (error) {
@@ -149,7 +137,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     signUp,
     signIn,
-    signInWithGoogle,
     signOut,
     forgotPassword,
     loading
