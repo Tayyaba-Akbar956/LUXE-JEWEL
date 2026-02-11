@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
@@ -131,10 +133,10 @@ export default function AdminDashboardPage() {
                         <div className="text-right">
                           <p className="text-sm font-medium text-champagne-200">${parseFloat(order.total_amount).toFixed(2)}</p>
                           <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider ${order.status === 'completed' || order.status === 'delivered'
-                              ? 'bg-green-900/30 text-green-400'
-                              : order.status === 'pending'
-                                ? 'bg-yellow-900/30 text-yellow-400'
-                                : 'bg-blue-900/30 text-blue-400'
+                            ? 'bg-green-900/30 text-green-400'
+                            : order.status === 'pending'
+                              ? 'bg-yellow-900/30 text-yellow-400'
+                              : 'bg-blue-900/30 text-blue-400'
                             }`}>
                             {order.status}
                           </span>
