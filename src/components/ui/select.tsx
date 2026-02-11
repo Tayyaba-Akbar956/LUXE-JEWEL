@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-const Select = ({ children, value, onValueChange }: any) => {
+const Select = ({ children, value, onValueChange }: { children: React.ReactNode, value: any, onValueChange: (value: string) => void }) => {
     return (
         <div className="relative inline-block w-full">
             <select

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect, ChangeEvent } from 'react';
+import { Button } from '../../../src/components/ui/button';
+import { Input } from '../../../src/components/ui/input';
 import {
   Table,
   TableBody,
@@ -10,9 +10,9 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+} from '../../../src/components/ui/table';
+import { Badge } from '../../../src/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../src/components/ui/select';
 import { supabase } from '@/lib/supabase';
 
 export default function AdminOrdersPage() {
@@ -102,7 +102,7 @@ export default function AdminOrdersPage() {
             <Input
               placeholder="Search orders..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: any) => setSearchTerm(e.target.value)}
               className="pl-10 bg-luxury-dark border-gold-500/30 text-champagne-200"
             />
             <svg
@@ -175,7 +175,7 @@ export default function AdminOrdersPage() {
                   <TableCell>
                     <Select
                       value={order.status}
-                      onValueChange={(value) => updateOrderStatus(order.id, value)}
+                      onValueChange={(value: string) => updateOrderStatus(order.id, value)}
                     >
                       <SelectTrigger className={`w-32 ${getStatusColor(order.status)}`}>
                         <SelectValue />

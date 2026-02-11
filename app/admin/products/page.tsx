@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import { Button } from '../../../src/components/ui/button';
+import { Input } from '../../../src/components/ui/input';
 import {
   Table,
   TableBody,
@@ -10,9 +10,9 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+} from '../../../src/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../../src/components/ui/dialog';
+import { Badge } from '../../../src/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 
 export default function AdminProductsPage() {
@@ -140,7 +140,7 @@ export default function AdminProductsPage() {
             <Input
               placeholder="Search products..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: any) => setSearchTerm(e.target.value)}
               className="pl-10 bg-luxury-dark border-gold-500/30 text-champagne-200"
             />
             <svg
@@ -333,7 +333,7 @@ function ProductDialog({
     }
   }, [product, isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as any;
     const val = type === 'checkbox' ? (e.target as any).checked : value;
 
@@ -352,7 +352,7 @@ function ProductDialog({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };

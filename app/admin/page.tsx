@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../src/components/ui/card';
 import { supabase } from '@/lib/supabase';
 
 export default function AdminDashboardPage() {
@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
         <>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
+            {stats.map((stat: any, index: number) => (
               <Card key={index} className="bg-luxury-dark border-gold-500/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-silver-400">{stat.title}</CardTitle>
@@ -124,7 +124,7 @@ export default function AdminDashboardPage() {
                   <div className="space-y-4">
                     {recentOrders.length === 0 ? (
                       <p className="text-center text-silver-500 py-8">No orders yet.</p>
-                    ) : recentOrders.map((order, index) => (
+                    ) : recentOrders.map((order: any, index: number) => (
                       <div key={index} className="flex justify-between items-center pb-4 border-b border-gold-500/10 last:border-0 last:pb-0">
                         <div>
                           <p className="text-sm font-medium text-champagne-200">{order.order_number}</p>
@@ -170,7 +170,7 @@ export default function AdminDashboardPage() {
                         <tr>
                           <td colSpan={3} className="py-8 text-center text-silver-500">No data available.</td>
                         </tr>
-                      ) : topProducts.map((product, index) => (
+                      ) : topProducts.map((product: any, index: number) => (
                         <tr key={index} className="border-b border-gold-500/10">
                           <td className="py-4 text-champagne-200">{product.name}</td>
                           <td className="py-4 text-right text-silver-400">{product.sold * 10}</td>

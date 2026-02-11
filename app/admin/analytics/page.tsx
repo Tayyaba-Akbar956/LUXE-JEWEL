@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../src/components/ui/card';
 
 export default function AdminAnalyticsPage() {
   // Mock data for analytics
@@ -44,7 +44,7 @@ export default function AdminAnalyticsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {customerStats.map((stat, index) => (
+        {customerStats.map((stat: any, index: number) => (
           <Card key={index} className="bg-luxury-dark border-gold-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-silver-400">{stat.title}</CardTitle>
@@ -67,9 +67,9 @@ export default function AdminAnalyticsPage() {
           <CardContent>
             <div className="h-80">
               <div className="flex items-end h-64 gap-2 mt-8 px-4">
-                {revenueData.map((data, index) => (
+                {revenueData.map((data: any, index: number) => (
                   <div key={index} className="flex flex-col items-center flex-1">
-                    <div 
+                    <div
                       className="w-full bg-gradient-to-t from-gold-500 to-gold-400 rounded-t hover:opacity-90 transition-opacity"
                       style={{ height: `${(data.revenue / 40000) * 100}%` }}
                     ></div>
@@ -91,7 +91,7 @@ export default function AdminAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topProducts.map((product, index) => (
+              {topProducts.map((product: any, index: number) => (
                 <div key={index} className="flex justify-between items-center pb-4 border-b border-gold-500/10 last:border-0 last:pb-0">
                   <div>
                     <p className="text-sm font-medium text-champagne-200">{product.name}</p>
