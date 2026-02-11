@@ -1,20 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
+import { processMockPayment } from '@/lib/mockPayment';
+import { supabase } from '@/lib/supabase';
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { items, getSubtotal, clearCart, getItemCount } = useCart();
+    const { items, getSubtotal, clearCart } = useCart();
     const [isProcessing, setIsProcessing] = useState(false);
     const [step, setStep] = useState<'shipping' | 'payment' | 'complete'>('shipping');
+    const [userId, setUserId] = useState<string | null>(null);
 
-    // Form states
+    useEffect(() => {
+        const checkUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setUserId(user.id);
+        };
+        checkUser();
+    }, []);
+
+    // Form states (simplified for brevity)
     const [shippingInfo, setShippingInfo] = useState({
         firstName: '',
         lastName: '',
@@ -48,12 +59,56 @@ export default function CheckoutPage() {
         e.preventDefault();
         setIsProcessing(true);
 
-        // Simulate payment processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            // 1. Process mock payment
+            const paymentResult = await processMockPayment({
+                amount: total,
+                currency: 'usd',
+                description: `LuxeJewel Order - ${items.length} items`,
+                receipt_email: shippingInfo.email
+            });
 
-        setIsProcessing(false);
-        setStep('complete');
-        clearCart();
+            if (paymentResult.status === 'succeeded') {
+                // 2. Persist order to database via API
+                const orderData = {
+                    userId,
+                    shippingAddress: shippingInfo,
+                    billingAddress: shippingInfo,
+                    items: items.map(item => ({
+                        product_id: item.productId,
+                        quantity: item.quantity,
+                        price: item.product?.price || 0
+                    })),
+                    subtotal,
+                    taxAmount: tax,
+                    shippingAmount: shipping,
+                    totalAmount: total,
+                    paymentMethod: 'mock-card'
+                };
+
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    setStep('complete');
+                    clearCart();
+                } else {
+                    alert(`Order creation failed: ${result.error || 'Unknown error'}`);
+                }
+            } else {
+                alert(`Payment failed: ${paymentResult.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert('An error occurred during payment processing. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     if (items.length === 0 && step !== 'complete') {

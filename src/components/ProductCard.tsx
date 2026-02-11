@@ -3,31 +3,29 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 
 interface ProductCardProps {
-  product: Product;
+  product: any;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addItem, isInCart } = useCart();
   const { toggleItem, isInWishlist } = useWishlist();
 
-  const {
-    id,
-    name,
-    slug,
-    price,
-    comparePrice,
-    featuredImage,
-    ratingAverage,
-    ratingCount,
-    shortDescription,
-    isNew,
-    isSale,
-  } = product;
+  // Handle both camelCase (mock) and snake_case (Supabase)
+  const id = product.id;
+  const name = product.name;
+  const slug = product.slug;
+  const price = parseFloat(product.price || 0);
+  const comparePrice = product.compare_price ? parseFloat(product.compare_price) : product.comparePrice;
+  const featuredImage = product.featured_image || product.featuredImage;
+  const ratingAverage = product.rating_average || product.ratingAverage || 0;
+  const ratingCount = product.rating_count || product.ratingCount || 0;
+  const shortDescription = product.short_description || product.shortDescription || product.description;
+  const isNew = product.is_new || product.isNew;
+  const isFeatured = product.is_featured || product.isFeatured;
 
   const inCart = isInCart(id);
   const inWishlist = isInWishlist(id);
@@ -35,19 +33,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(id);
+    addItem(product);
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleItem(id);
+    toggleItem(product);
   };
 
   const discount = comparePrice ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
 
   return (
-    <article className="group card-luxury overflow-hidden hover-lift">
+    <article className="group card-luxury overflow-hidden hover-lift transform transition-transform duration-300 hover:-translate-y-1 animate-fade-in">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-luxury-black-100">
         <Link href={`/products/${slug}`} className="block">
@@ -63,14 +61,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </Link>
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        <div className="absolute top-3 left-3 flex flex-col gap-2 animate-fade-in">
           {isNew && (
-            <span className="px-3 py-1 bg-gold-500 text-luxury-black text-xs font-heading uppercase tracking-wider">
+            <span className="px-3 py-1 bg-gold-500 text-luxury-black text-xs font-heading uppercase tracking-wider animate-pulse-gold">
               New
             </span>
           )}
-          {isSale && discount > 0 && (
-            <span className="px-3 py-1 bg-red-600 text-white text-xs font-heading uppercase tracking-wider">
+          {isFeatured && (
+            <span className="px-3 py-1 bg-luxury-black/80 text-gold-500 border border-gold-500/50 text-xs font-heading uppercase tracking-wider">
+              Elite
+            </span>
+          )}
+          {comparePrice && discount > 0 && (
+            <span className="px-3 py-1 bg-red-600 text-white text-xs font-heading uppercase tracking-wider animate-pulse">
               -{discount}%
             </span>
           )}
@@ -80,8 +83,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <button
           onClick={handleToggleWishlist}
           className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-300 ${inWishlist
-              ? 'bg-gold-500 text-luxury-black'
-              : 'bg-luxury-black/50 text-white hover:bg-gold-500 hover:text-luxury-black'
+            ? 'bg-gold-500 text-luxury-black animate-pulse-gold'
+            : 'bg-luxury-black/50 text-white hover:bg-gold-500 hover:text-luxury-black'
             }`}
           aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
         >
@@ -101,13 +104,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
 
         {/* Quick Add Button */}
-        <div className="absolute inset-x-0 bottom-0 translate-y-full p-4 transition-transform duration-300 group-hover:translate-y-0">
+        <div className="absolute inset-x-0 bottom-0 translate-y-full p-4 transition-transform duration-500 group-hover:translate-y-0 animate-fade-in">
           <button
             onClick={handleAddToCart}
             disabled={inCart}
             className={`w-full py-3 font-heading text-xs uppercase tracking-widest transition-all duration-300 ${inCart
-                ? 'bg-silver-700 text-silver-400 cursor-not-allowed'
-                : 'btn-luxury'
+              ? 'bg-silver-700 text-silver-400 cursor-not-allowed'
+              : 'btn-luxury'
               }`}
           >
             {inCart ? 'In Cart' : 'Add to Cart'}
@@ -116,14 +119,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-4 transition-all duration-300">
         <Link href={`/products/${slug}`} className="block group/title">
-          <h3 className="font-heading text-lg text-champagne-200 line-clamp-1 group-hover/title:text-gold-500 transition-colors">
+          <h3 className="font-heading text-lg text-champagne-200 line-clamp-1 group-hover/title:text-gold-500 transition-colors duration-300">
             {name}
           </h3>
         </Link>
 
-        <p className="mt-1 text-xs text-silver-500 line-clamp-1">{shortDescription}</p>
+        {shortDescription && (
+          <p className="mt-1 text-xs text-silver-500 line-clamp-1 transition-colors duration-300 group-hover:text-champagne-200">{shortDescription}</p>
+        )}
 
         {/* Rating */}
         <div className="mt-2 flex items-center gap-2">
@@ -132,7 +137,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <svg
                 key={i}
                 className={`h-3.5 w-3.5 ${i < Math.floor(ratingAverage) ? 'text-gold-500' : 'text-silver-700'
-                  }`}
+                  } transition-colors duration-300`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -140,14 +145,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </svg>
             ))}
           </div>
-          <span className="text-xs text-silver-600">({ratingCount})</span>
+          <span className="text-xs text-silver-600 transition-colors duration-300">({ratingCount})</span>
         </div>
 
         {/* Price */}
         <div className="mt-3 flex items-center gap-2">
-          <span className="font-display text-xl text-gold-500">${price.toLocaleString()}</span>
+          <span className="font-display text-xl text-gold-500 transition-colors duration-300">${price.toLocaleString()}</span>
           {comparePrice && comparePrice > price && (
-            <span className="text-sm text-silver-600 line-through">${comparePrice.toLocaleString()}</span>
+            <span className="text-sm text-silver-600 line-through transition-colors duration-300">${comparePrice.toLocaleString()}</span>
           )}
         </div>
       </div>

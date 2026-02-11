@@ -123,3 +123,6 @@ credentials.json
 # Supabase
 supabase/
 node_modules
+
+# AI/Tooling
+.qwen/

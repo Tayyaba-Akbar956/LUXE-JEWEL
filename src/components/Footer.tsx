@@ -6,7 +6,7 @@ const Footer = () => {
     <footer className="bg-luxury-black border-t border-gold-500/20">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
           {/* Brand */}
           <div>
             <Link href="/" className="inline-block">
@@ -51,17 +51,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Service */}
-          <div>
-            <h3 className="font-heading text-sm uppercase tracking-widest text-gold-500 mb-6">Customer Care</h3>
-            <ul className="space-y-3">
-              <li><Link href="/contact" className="text-silver-500 hover:text-gold-500 transition-colors text-sm">Contact Us</Link></li>
-              <li><Link href="/shipping" className="text-silver-500 hover:text-gold-500 transition-colors text-sm">Shipping & Delivery</Link></li>
-              <li><Link href="/returns" className="text-silver-500 hover:text-gold-500 transition-colors text-sm">Returns & Exchanges</Link></li>
-              <li><Link href="/size-guide" className="text-silver-500 hover:text-gold-500 transition-colors text-sm">Ring Size Guide</Link></li>
-              <li><Link href="/faq" className="text-silver-500 hover:text-gold-500 transition-colors text-sm">FAQs</Link></li>
-            </ul>
-          </div>
 
           {/* Newsletter */}
           <div>

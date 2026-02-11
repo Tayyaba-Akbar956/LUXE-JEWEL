@@ -1,27 +1,15 @@
--- Seed Categories
+-- Seed Categories with Real Images
 INSERT INTO categories (name, slug, description, image_url) VALUES
-('Rings', 'rings', 'Elegant rings for every occasion', 'https://placehold.co/600x400?text=Rings'),
-('Necklaces', 'necklaces', 'Stunning necklaces to elevate your style', 'https://placehold.co/600x400?text=Necklaces'),
-('Earrings', 'earrings', 'Beautiful earrings that sparkle', 'https://placehold.co/600x400?text=Earrings'),
-('Bracelets', 'bracelets', 'Chic bracelets for a modern look', 'https://placehold.co/600x400?text=Bracelets');
+('Rings', 'rings', 'Elegant rings for every occasion', 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80'),
+('Necklaces', 'necklaces', 'Stunning necklaces to elevate your style', 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=800&q=80'),
+('Earrings', 'earrings', 'Beautiful earrings that sparkle', 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=80'),
+('Bracelets', 'bracelets', 'Chic bracelets for a modern look', 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80')
+ON CONFLICT (slug) DO UPDATE SET 
+  image_url = EXCLUDED.image_url,
+  description = EXCLUDED.description;
 
--- Seed Products
+-- Seed Products with High-Quality Professional Photography
 INSERT INTO products (name, slug, description, short_description, price, compare_price, category_id, inventory_quantity, images, featured_image, is_featured, rating_average, rating_count) VALUES
-(
-  'Diamond Stud Earrings', 
-  'diamond-stud-earrings', 
-  'Classic diamond stud earrings set in 14k white gold. Perfect for daily wear or special occasions. These timeless pieces feature round-cut diamonds with excellent clarity and brilliance.',
-  'Beautiful diamond stud earrings for everyday elegance.',
-  199.99, 
-  249.99, 
-  (SELECT id FROM categories WHERE slug = 'earrings'),
-  50, 
-  ARRAY['https://placehold.co/600x600?text=Diamond+Studs+1', 'https://placehold.co/600x600?text=Diamond+Studs+2'],
-  'https://placehold.co/600x600?text=Diamond+Studs+1',
-  true,
-  4.8,
-  24
-),
 (
   'Gold Chain Necklace', 
   'gold-chain-necklace', 
@@ -31,8 +19,8 @@ INSERT INTO products (name, slug, description, short_description, price, compare
   null, 
   (SELECT id FROM categories WHERE slug = 'necklaces'),
   30, 
-  ARRAY['https://placehold.co/600x600?text=Gold+Necklace+1', 'https://placehold.co/600x600?text=Gold+Necklace+2'],
-  'https://placehold.co/600x600?text=Gold+Necklace+1',
+  ARRAY['https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=800&q=80'],
+  'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=800&q=80',
   true,
   4.5,
   18
@@ -46,8 +34,8 @@ INSERT INTO products (name, slug, description, short_description, price, compare
   120.00, 
   (SELECT id FROM categories WHERE slug = 'earrings'),
   20, 
-  ARRAY['https://placehold.co/600x600?text=Pearl+Drop+1'],
-  'https://placehold.co/600x600?text=Pearl+Drop+1',
+  ARRAY['https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80'],
+  'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800&q=80',
   false,
   4.2,
   32
@@ -61,8 +49,8 @@ INSERT INTO products (name, slug, description, short_description, price, compare
   null, 
   (SELECT id FROM categories WHERE slug = 'bracelets'),
   45, 
-  ARRAY['https://placehold.co/600x600?text=Silver+Bangles+1'],
-  'https://placehold.co/600x600?text=Silver+Bangles+1',
+  ARRAY['https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80'],
+  'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80',
   false,
   4.6,
   15
@@ -76,9 +64,14 @@ INSERT INTO products (name, slug, description, short_description, price, compare
   750.00, 
   (SELECT id FROM categories WHERE slug = 'rings'),
   10, 
-  ARRAY['https://placehold.co/600x600?text=Sapphire+Ring+1', 'https://placehold.co/600x600?text=Sapphire+Ring+2'],
-  'https://placehold.co/600x600?text=Sapphire+Ring+1',
+  ARRAY['https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80'],
+  'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80',
   true,
   4.9,
   8
-);
+)
+ON CONFLICT (slug) DO UPDATE SET
+  images = EXCLUDED.images,
+  featured_image = EXCLUDED.featured_image,
+  description = EXCLUDED.description,
+  price = EXCLUDED.price;

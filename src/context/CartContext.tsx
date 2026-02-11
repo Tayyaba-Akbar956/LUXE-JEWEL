@@ -1,17 +1,17 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, getProductById } from '@/data/products';
+import { Product } from '@/data/products';
 
 export interface CartItem {
     productId: number;
     quantity: number;
-    product?: Product;
+    product: Product;
 }
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (productId: number, quantity?: number) => void;
+    addItem: (product: Product, quantity?: number) => void;
     removeItem: (productId: number) => void;
     updateQuantity: (productId: number, quantity: number) => void;
     clearCart: () => void;
@@ -34,12 +34,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const stored = localStorage.getItem(CART_STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
-                // Validate and add product data
-                const validItems = parsed.map((item: CartItem) => ({
-                    ...item,
-                    product: getProductById(item.productId),
-                })).filter((item: CartItem) => item.product);
-                setItems(validItems);
+                // In Phase 5+, we store the full product object to avoid re-fetching
+                setItems(parsed);
             }
         } catch (error) {
             console.error('Error loading cart:', error);
@@ -50,25 +46,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Save cart to localStorage when items change
     useEffect(() => {
         if (isLoaded) {
-            const toStore = items.map(({ productId, quantity }) => ({ productId, quantity }));
-            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(toStore));
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
         }
     }, [items, isLoaded]);
 
-    const addItem = (productId: number, quantity: number = 1) => {
-        const product = getProductById(productId);
-        if (!product) return;
+    const addItem = (product: Product, quantity: number = 1) => {
+        if (!product || !product.id) return;
 
         setItems(prev => {
-            const existing = prev.find(item => item.productId === productId);
+            const existing = prev.find(item => item.productId === product.id);
             if (existing) {
                 return prev.map(item =>
-                    item.productId === productId
+                    item.productId === product.id
                         ? { ...item, quantity: item.quantity + quantity }
                         : item
                 );
             }
-            return [...prev, { productId, quantity, product }];
+            return [...prev, { productId: product.id, quantity, product }];
         });
     };
 

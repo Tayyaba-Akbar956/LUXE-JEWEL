@@ -1,178 +1,243 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ProductCard from '@/components/ProductCard';
+import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 
-// Mock the next/image component since we're testing
-vi.mock('next/image', () => ({
-  __esModule: true,
-  default: ({ src, alt, ...props }: { src: string; alt: string }) => (
-    <img src={src} alt={alt} {...props} />
-  ),
-}));
+// Mock the next/link component
+vi.mock('next/link', async () => {
+  const mod = await vi.importActual('next/link');
+  return {
+    ...(mod as any),
+    default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+      <a href={href} data-testid="link">{children}</a>
+    ),
+  };
+});
 
-// Mock the AddToCartButton component
-vi.mock('@/components/AddToCartButton', () => ({
-  __esModule: true,
-  default: ({ productId, variantId, onAddToCart }: { productId: number; variantId?: number; onAddToCart: () => void }) => (
-    <button onClick={onAddToCart} data-testid="add-to-cart-button">
-      Add to Cart
-    </button>
-  ),
-}));
+// Mock the next/image component
+vi.mock('next/image', () => {
+  return {
+    __esModule: true,
+    default: (props: any) => {
+      return <img {...props} data-testid="mock-image" />;
+    },
+  };
+});
 
-// Mock the WishlistButton component
-vi.mock('@/components/WishlistButton', () => ({
-  __esModule: true,
-  default: ({ productId, onToggleWishlist }: { productId: number; onToggleWishlist: () => void }) => (
-    <button onClick={onToggleWishlist} data-testid="wishlist-button">
-      Wishlist
-    </button>
-  ),
-}));
+// Mock the CartContext
+vi.mock('@/context/CartContext', async () => {
+  const actual = await vi.importActual('@/context/CartContext');
+  return {
+    ...(actual as any),
+    useCart: () => ({
+      addItem: vi.fn(),
+      isInCart: vi.fn().mockReturnValue(false),
+    }),
+  };
+});
+
+// Mock the WishlistContext
+vi.mock('@/context/WishlistContext', async () => {
+  const actual = await vi.importActual('@/context/WishlistContext');
+  return {
+    ...(actual as any),
+    useWishlist: () => ({
+      toggleItem: vi.fn(),
+      isInWishlist: vi.fn().mockReturnValue(false),
+    }),
+  };
+});
 
 const mockProduct = {
   id: 1,
-  name: 'Diamond Stud Earrings',
-  price: 199.99,
-  comparePrice: 249.99,
-  imageUrls: ['https://example.com/earrings.jpg'],
-  featuredImageUrl: 'https://example.com/earrings.jpg',
-  ratingAverage: 4.5,
-  ratingCount: 24,
-  category: 'Earrings',
-  shortDescription: 'Beautiful diamond stud earrings for everyday elegance.',
+  name: 'Gilded Solitaire Crystal Ring',
+  slug: 'gilded-solitaire-crystal-ring',
+  price: 24.99,
+  comparePrice: 34.99,
+  category: 'rings',
+  images: ['https://placehold.co/600x600?text=Ring'],
+  featuredImage: 'https://placehold.co/600x600?text=Ring',
+  description: 'A stunning solitaire ring featuring a high-quality cubic zirconia crystal in a gold-plated setting.',
+  shortDescription: 'Artificial crystal ring with gold plating',
+  material: 'Gold-Plated Alloy',
+  gemstone: 'Cubic Zirconia',
+  weight: '3.5g',
+  ratingAverage: 4.8,
+  ratingCount: 156,
+  inStock: true,
+  stockQuantity: 50,
+  isFeatured: true,
+  isNew: false,
+  isSale: false,
 };
 
 describe('ProductCard Component', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders product information correctly', () => {
-    render(<ProductCard product={mockProduct} />);
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={mockProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
 
     // Check that product name is displayed
     expect(screen.getByText(mockProduct.name)).toBeInTheDocument();
 
     // Check that price is displayed
-    expect(screen.getByText(`$${mockProduct.price}`)).toBeInTheDocument();
+    expect(screen.getByText('$24.99')).toBeInTheDocument();
 
     // Check that compare price is displayed (if different from regular price)
-    if (mockProduct.comparePrice && mockProduct.comparePrice !== mockProduct.price) {
-      expect(screen.getByText(`$${mockProduct.comparePrice}`)).toBeInTheDocument();
-    }
+    expect(screen.getByText('$34.99')).toBeInTheDocument();
 
     // Check that image is displayed
-    const image = screen.getByAltText(mockProduct.name);
+    const image = screen.getByTestId('mock-image');
     expect(image).toBeInTheDocument();
-    expect(image).toHaveAttribute('src', mockProduct.featuredImageUrl);
 
     // Check that rating information is displayed
-    expect(screen.getByText(`${mockProduct.ratingAverage} (${mockProduct.ratingCount})`)).toBeInTheDocument();
+    expect(screen.getByText('(156)')).toBeInTheDocument();
   });
 
-  it('handles "Add to Cart" button click', () => {
-    const mockOnAddToCart = vi.fn();
-    
-    // Mock the AddToCartButton to call our mock function
-    vi.doMock('@/components/AddToCartButton', () => ({
-      __esModule: true,
-      default: ({ onAddToCart }: { onAddToCart: () => void }) => (
-        <button onClick={() => onAddToCart()} data-testid="add-to-cart-button">
-          Add to Cart
-        </button>
-      ),
-    }));
+  it('displays badges for new and sale products', () => {
+    const specialProduct = {
+      ...mockProduct,
+      isNew: true,
+      isSale: true,
+    };
 
-    // Need to dynamically import after mocking
-    const { default: ProductCardDynamic } = require('@/components/ProductCard');
-    render(<ProductCardDynamic product={mockProduct} onAddToCart={mockOnAddToCart} />);
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={specialProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
 
-    const addToCartButton = screen.getByTestId('add-to-cart-button');
-    fireEvent.click(addToCartButton);
+    // Check for "New" badge
+    expect(screen.getByText('New')).toBeInTheDocument();
 
-    expect(mockOnAddToCart).toHaveBeenCalledWith(mockProduct.id);
+    // Check for discount percentage badge
+    expect(screen.getByText('-29%')).toBeInTheDocument();
   });
 
-  it('handles wishlist toggle', () => {
-    const mockOnToggleWishlist = vi.fn();
-    
-    // Mock the WishlistButton to call our mock function
-    vi.doMock('@/components/WishlistButton', () => ({
-      __esModule: true,
-      default: ({ onToggleWishlist }: { onToggleWishlist: () => void }) => (
-        <button onClick={() => onToggleWishlist()} data-testid="wishlist-button">
-          Wishlist
-        </button>
-      ),
-    }));
+  it('does not display badges for regular products', () => {
+    const regularProduct = {
+      ...mockProduct,
+      isNew: false,
+      isSale: false,
+      comparePrice: undefined,
+    };
 
-    // Need to dynamically import after mocking
-    const { default: ProductCardDynamic } = require('@/components/ProductCard');
-    render(<ProductCardDynamic product={mockProduct} onToggleWishlist={mockOnToggleWishlist} />);
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={regularProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
 
-    const wishlistButton = screen.getByTestId('wishlist-button');
-    fireEvent.click(wishlistButton);
+    // Check that "New" badge is not present
+    expect(screen.queryByText('New')).not.toBeInTheDocument();
 
-    expect(mockOnToggleWishlist).toHaveBeenCalledWith(mockProduct.id);
+    // Check that discount badge is not present
+    expect(screen.queryByText('-')).not.toBeInTheDocument();
   });
 
-  it('displays image loading and error states', () => {
-    render(<ProductCard product={mockProduct} />);
+  it('renders short description', () => {
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={mockProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
 
-    const image = screen.getByAltText(mockProduct.name);
-    
-    // Initially, image should be loading
-    expect(image).toBeInTheDocument();
-    
-    // Simulate error state
-    fireEvent.error(image);
-    
-    // Check if fallback image or placeholder is shown
-    // This would depend on how the Image component handles errors in the actual implementation
+    expect(screen.getByText(mockProduct.shortDescription)).toBeInTheDocument();
   });
 
-  it('applies correct CSS classes for styling', () => {
-    render(<ProductCard product={mockProduct} />);
+  it('renders category', () => {
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={mockProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
 
-    // Check if the main container has appropriate CSS classes
-    const cardContainer = screen.getByRole('article');
-    expect(cardContainer).toHaveClass('group', 'relative', 'overflow-hidden');
-
-    // Check if the image container has appropriate classes
-    const imageLink = screen.getByRole('link');
-    expect(imageLink).toHaveClass('aspect-square', 'w-full', 'overflow-hidden', 'rounded-md');
+    expect(screen.getByText('rings')).toBeInTheDocument();
   });
 
-  it('shows quick view button on hover (desktop)', () => {
-    render(<ProductCard product={mockProduct} />);
-
-    const imageLink = screen.getByRole('link');
-    fireEvent.mouseEnter(imageLink);
-
-    // Check if quick view button appears on hover
-    const quickViewButton = screen.queryByText('Quick View');
-    if (quickViewButton) {
-      expect(quickViewButton).toBeInTheDocument();
-    }
-  });
-
-  it('responds to responsive behavior', () => {
-    // Test mobile behavior
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: vi.fn().mockImplementation(query => ({
-        matches: query.includes('max-width: 768px'),
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-      })),
+  it('handles add to cart functionality', () => {
+    const { useCart } = require('@/context/CartContext');
+    const mockAddItem = vi.fn();
+    useCart.mockReturnValue({
+      addItem: mockAddItem,
+      isInCart: vi.fn().mockReturnValue(false),
     });
 
-    render(<ProductCard product={mockProduct} />);
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={mockProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
 
-    // Check if mobile-specific behavior is applied
-    // This would depend on the actual implementation
+    // Find and click the "Add to Cart" button
+    const addToCartButton = screen.getByText('Add to Cart');
+    fireEvent.click(addToCartButton);
+
+    // Verify that the addItem function was called with the correct product ID
+    expect(mockAddItem).toHaveBeenCalledWith(mockProduct.id);
+  });
+
+  it('handles wishlist toggle functionality', () => {
+    const { useWishlist } = require('@/context/WishlistContext');
+    const mockToggleItem = vi.fn();
+    useWishlist.mockReturnValue({
+      toggleItem: mockToggleItem,
+      isInWishlist: vi.fn().mockReturnValue(false),
+    });
+
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={mockProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
+
+    // Find and click the wishlist button
+    const wishlistButton = screen.getByLabelText('Add to wishlist');
+    fireEvent.click(wishlistButton);
+
+    // Verify that the toggleItem function was called with the correct product ID
+    expect(mockToggleItem).toHaveBeenCalledWith(mockProduct.id);
+  });
+
+  it('displays "In Cart" text when product is in cart', () => {
+    const { useCart } = require('@/context/CartContext');
+    useCart.mockReturnValue({
+      addItem: vi.fn(),
+      isInCart: vi.fn().mockReturnValue(true),
+    });
+
+    render(
+      <CartProvider>
+        <WishlistProvider>
+          <ProductCard product={mockProduct} />
+        </WishlistProvider>
+      </CartProvider>
+    );
+
+    // Check that "In Cart" text is displayed instead of "Add to Cart"
+    expect(screen.getByText('In Cart')).toBeInTheDocument();
+    expect(screen.queryByText('Add to Cart')).not.toBeInTheDocument();
   });
 });

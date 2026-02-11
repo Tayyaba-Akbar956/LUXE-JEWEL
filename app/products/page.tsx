@@ -1,28 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
+import { supabase } from '@/lib/supabase';
 
 export default function ProductsPage() {
     const [sortBy, setSortBy] = useState('featured');
     const [filterCategory, setFilterCategory] = useState('all');
+    const [products, setProducts] = useState<any[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredProducts = products.filter(p =>
-        filterCategory === 'all' || p.category === filterCategory
-    );
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
 
-    const sortedProducts = [...filteredProducts].sort((a, b) => {
-        switch (sortBy) {
-            case 'price-low': return a.price - b.price;
-            case 'price-high': return b.price - a.price;
-            case 'rating': return b.ratingAverage - a.ratingAverage;
-            case 'newest': return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
-            default: return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
-        }
-    });
+            // Fetch categories
+            const { data: catData } = await supabase.from('categories').select('*');
+            if (catData) setCategories(catData);
+
+            // Fetch products
+            let query = supabase.from('products').select('*').eq('is_active', true);
+
+            if (filterCategory !== 'all') {
+                const category = catData?.find(c => c.slug === filterCategory);
+                if (category) {
+                    query = query.eq('category_id', category.id);
+                }
+            }
+
+            // Apply sorting
+            switch (sortBy) {
+                case 'price-low': query = query.order('price', { ascending: true }); break;
+                case 'price-high': query = query.order('price', { ascending: false }); break;
+                case 'rating': query = query.order('rating_average', { ascending: false }); break;
+                case 'newest': query = query.order('created_at', { ascending: false }); break;
+                default: query = query.order('is_featured', { ascending: false });
+            }
+
+            const { data: prodData } = await query;
+            if (prodData) setProducts(prodData);
+
+            setLoading(false);
+        };
+
+        fetchData();
+    }, [filterCategory, sortBy]);
 
     return (
         <div className="flex min-h-screen flex-col bg-luxury-black">
@@ -50,16 +75,25 @@ export default function ProductsPage() {
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-gold-500/20">
                             {/* Category Filter */}
                             <div className="flex flex-wrap gap-2">
-                                {['all', 'rings', 'necklaces', 'earrings', 'bracelets'].map(cat => (
+                                <button
+                                    onClick={() => setFilterCategory('all')}
+                                    className={`px-4 py-2 font-heading text-xs uppercase tracking-wider rounded-sm transition-all ${filterCategory === 'all'
+                                        ? 'bg-gold-500 text-luxury-black'
+                                        : 'border border-gold-500/30 text-silver-400 hover:border-gold-500 hover:text-gold-500'
+                                        }`}
+                                >
+                                    All
+                                </button>
+                                {categories.map(cat => (
                                     <button
-                                        key={cat}
-                                        onClick={() => setFilterCategory(cat)}
-                                        className={`px-4 py-2 font-heading text-xs uppercase tracking-wider rounded-sm transition-all ${filterCategory === cat
-                                                ? 'bg-gold-500 text-luxury-black'
-                                                : 'border border-gold-500/30 text-silver-400 hover:border-gold-500 hover:text-gold-500'
+                                        key={cat.id}
+                                        onClick={() => setFilterCategory(cat.slug)}
+                                        className={`px-4 py-2 font-heading text-xs uppercase tracking-wider rounded-sm transition-all ${filterCategory === cat.slug
+                                            ? 'bg-gold-500 text-luxury-black'
+                                            : 'border border-gold-500/30 text-silver-400 hover:border-gold-500 hover:text-gold-500'
                                             }`}
                                     >
-                                        {cat === 'all' ? 'All' : cat}
+                                        {cat.name}
                                     </button>
                                 ))}
                             </div>
@@ -81,16 +115,26 @@ export default function ProductsPage() {
                             </div>
                         </div>
 
-                        <p className="text-silver-500 text-sm mb-6">
-                            Showing {sortedProducts.length} products
-                        </p>
+                        {loading ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                                    <div key={i} className="aspect-[4/5] bg-luxury-dark/50 animate-pulse rounded-lg border border-gold-500/10" />
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-silver-500 text-sm mb-6">
+                                    Showing {products.length} products
+                                </p>
 
-                        {/* Product Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {sortedProducts.map(product => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
-                        </div>
+                                {/* Product Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {products.map(product => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </section>
             </main>

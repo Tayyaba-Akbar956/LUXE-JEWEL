@@ -1,13 +1,18 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, getProductById } from '@/data/products';
+import { Product } from '@/data/products';
+
+interface WishlistItem {
+    id: number;
+    product?: Product;
+}
 
 interface WishlistContextType {
     items: number[];
-    addItem: (productId: number) => void;
+    addItem: (product: Product) => void;
     removeItem: (productId: number) => void;
-    toggleItem: (productId: number) => void;
+    toggleItem: (product: Product) => void;
     isInWishlist: (productId: number) => boolean;
     getWishlistProducts: () => Product[];
     getItemCount: () => number;
@@ -19,18 +24,21 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 const WISHLIST_STORAGE_KEY = 'luxejewel-wishlist';
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-    const [items, setItems] = useState<number[]>([]);
+    const [ids, setIds] = useState<number[]>([]);
+    const [products, setProducts] = useState<Record<number, Product>>({});
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load wishlist from localStorage on mount
     useEffect(() => {
         try {
-            const stored = localStorage.getItem(WISHLIST_STORAGE_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                // Validate that products exist
-                const validItems = parsed.filter((id: number) => getProductById(id));
-                setItems(validItems);
+            const storedIds = localStorage.getItem(WISHLIST_STORAGE_KEY);
+            const storedProducts = localStorage.getItem(WISHLIST_STORAGE_KEY + '_products');
+
+            if (storedIds) {
+                setIds(JSON.parse(storedIds));
+            }
+            if (storedProducts) {
+                setProducts(JSON.parse(storedProducts));
             }
         } catch (error) {
             console.error('Error loading wishlist:', error);
@@ -41,52 +49,61 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     // Save wishlist to localStorage when items change
     useEffect(() => {
         if (isLoaded) {
-            localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(items));
+            localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids));
+            localStorage.setItem(WISHLIST_STORAGE_KEY + '_products', JSON.stringify(products));
         }
-    }, [items, isLoaded]);
+    }, [ids, products, isLoaded]);
 
-    const addItem = (productId: number) => {
-        if (!getProductById(productId)) return;
-        setItems(prev => {
-            if (prev.includes(productId)) return prev;
-            return [...prev, productId];
+    const addItem = (product: Product) => {
+        if (!product || !product.id) return;
+
+        setIds(prev => {
+            if (prev.includes(product.id)) return prev;
+            return [...prev, product.id];
         });
+
+        setProducts(prev => ({
+            ...prev,
+            [product.id]: product
+        }));
     };
 
     const removeItem = (productId: number) => {
-        setItems(prev => prev.filter(id => id !== productId));
+        setIds(prev => prev.filter(id => id !== productId));
+        // We keep the product in the products cache for performance/offline but it's not in the 'list'
     };
 
-    const toggleItem = (productId: number) => {
-        if (items.includes(productId)) {
-            removeItem(productId);
+    const toggleItem = (product: Product) => {
+        if (ids.includes(product.id)) {
+            removeItem(product.id);
         } else {
-            addItem(productId);
+            addItem(product);
         }
     };
 
     const isInWishlist = (productId: number) => {
-        return items.includes(productId);
+        return ids.includes(productId);
     };
 
     const getWishlistProducts = () => {
-        return items
-            .map(id => getProductById(id))
+        return ids
+            .map(id => products[id])
             .filter((p): p is Product => p !== undefined);
     };
 
     const getItemCount = () => {
-        return items.length;
+        return ids.length;
     };
 
     const clearWishlist = () => {
-        setItems([]);
+        setIds([]);
+        setProducts({});
     };
 
     return (
         <WishlistContext.Provider
             value={{
-                items,
+                items: ids,
                 addItem,
                 removeItem,
                 toggleItem,

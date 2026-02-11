@@ -21,6 +21,7 @@ const Header = () => {
     { href: '/necklaces', label: 'Necklaces' },
     { href: '/earrings', label: 'Earrings' },
     { href: '/bracelets', label: 'Bracelets' },
+    { href: '/ai-search', label: 'AI Visual Search', highlight: true },
   ];
 
   return (
@@ -40,27 +41,18 @@ const Header = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative font-heading text-sm uppercase tracking-widest text-silver-400 transition-colors hover:text-gold-500 group"
+                className={`relative font-heading text-sm uppercase tracking-widest transition-colors group ${link.highlight ? 'text-gold-500 hover:text-champagne-200' : 'text-silver-400 hover:text-gold-500'
+                  }`}
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold-500 transition-all duration-300 group-hover:w-full" />
+                <span className={`absolute -bottom-1 left-0 h-px transition-all duration-300 group-hover:w-full ${link.highlight ? 'bg-champagne-200 w-0' : 'bg-gold-500 w-0'
+                  }`} />
               </Link>
             ))}
           </nav>
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
-            {/* Search Button */}
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 text-silver-400 transition-colors hover:text-gold-500"
-              aria-label="Search"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-
             {/* Wishlist */}
             <Link href="/wishlist" className="relative p-2 text-silver-400 transition-colors hover:text-gold-500">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +78,7 @@ const Header = () => {
             </Link>
 
             {/* Account */}
-            <Link href="/account" className="hidden md:block p-2 text-silver-400 transition-colors hover:text-gold-500">
+            <Link href="/profile" className="hidden md:block p-2 text-silver-400 transition-colors hover:text-gold-500">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -111,33 +103,17 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Search Bar */}
-        {isSearchOpen && (
-          <div className="py-4 border-t border-gold-500/10 animate-fade-in">
-            <div className="relative max-w-xl mx-auto">
-              <input
-                type="text"
-                placeholder="Search for jewelry..."
-                className="input-luxury w-full pl-12"
-                autoFocus
-              />
-              <svg className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gold-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Menu */}
+        {/* Mobile Navigation Menu */}
         {isMenuOpen && (
-          <nav className="lg:hidden py-6 border-t border-gold-500/10 animate-fade-in">
+          <nav className="lg:hidden border-t border-gold-500/10 py-6 animate-fade-in">
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="font-heading text-sm uppercase tracking-widest text-silver-400 transition-colors hover:text-gold-500 py-2"
+                  className={`font-heading text-sm uppercase tracking-widest transition-colors ${link.highlight ? 'text-gold-500' : 'text-silver-400 hover:text-gold-500'
+                    }`}
                 >
                   {link.label}
                 </Link>

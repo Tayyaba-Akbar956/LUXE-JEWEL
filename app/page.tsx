@@ -1,16 +1,32 @@
-'use client';
-
-import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { getFeaturedProducts, getNewProducts, products } from '@/data/products';
+import { createClient } from '@/lib/supabase-server';
 
-export default function HomePage() {
-  const featuredProducts = getFeaturedProducts();
-  const newProducts = getNewProducts();
+export default async function HomePage() {
+  const supabase = createClient();
+
+  // Fetch featured products
+  const { data: featuredData } = await supabase
+    .from('products')
+    .select('*')
+    .eq('is_active', true)
+    .eq('is_featured', true)
+    .limit(8);
+
+  const featuredProducts = featuredData || [];
+
+  // Fetch new products
+  const { data: newData } = await supabase
+    .from('products')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(4);
+
+  const newProducts = newData || [];
 
   // Category showcase images
   const categories = [
@@ -122,7 +138,9 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.slice(0, 8).map(product => (
+              {featuredProducts.length === 0 ? (
+                <div className="col-span-full text-center text-silver-500">No featured items available.</div>
+              ) : featuredProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -148,7 +166,7 @@ export default function HomePage() {
               {categories.map((category) => (
                 <Link
                   key={category.slug}
-                  href={`/${category.slug}`}
+                  href={`/products?category=${category.slug}`}
                   className="group relative aspect-[3/4] overflow-hidden rounded-lg border border-gold-500/20 hover:border-gold-500/50 transition-all duration-500"
                 >
                   <Image
@@ -183,7 +201,9 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts.slice(0, 4).map(product => (
+              {newProducts.length === 0 ? (
+                <div className="col-span-full text-center text-silver-500">No new arrivals.</div>
+              ) : newProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>

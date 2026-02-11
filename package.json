@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "generate-embeddings": "tsx scripts/generate-embeddings.ts",
+    "check-env": "node scripts/check-env.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
@@ -15,9 +17,11 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-slot": "^1.0.2",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "dotenv": "^17.2.4",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.292.0",
     "next": "14.0.1",
@@ -27,7 +31,8 @@
     "stripe": "^14.25.0",
     "supabase": "^1.82.2",
     "tailwind-merge": "^2.0.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.4",

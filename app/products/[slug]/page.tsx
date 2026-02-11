@@ -1,23 +1,58 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ProductCard from '@/components/ProductCard';
-import { getProductBySlug, products } from '@/data/products';
+import AIRecommendations from '@/components/AIRecommendations';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { supabase } from '@/lib/supabase';
 
 export default function ProductDetailPage() {
     const params = useParams();
     const slug = params?.slug as string;
-    const product = slug ? getProductBySlug(slug) : undefined;
+    const [product, setProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     const { addItem, isInCart } = useCart();
     const { toggleItem, isInWishlist } = useWishlist();
+
+    useEffect(() => {
+        const fetchProduct = async () => {
+            if (!slug) return;
+            setLoading(true);
+
+            const { data, error } = await supabase
+                .from('products')
+                .select('*, categories(name, slug)')
+                .eq('slug', slug)
+                .single();
+
+            if (data && !error) {
+                setProduct(data);
+                // Increment view count
+                supabase.rpc('update_product_view_count', { product_id: data.id });
+            }
+            setLoading(false);
+        };
+
+        fetchProduct();
+    }, [slug]);
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen flex-col bg-luxury-black">
+                <Header />
+                <main className="flex-grow flex items-center justify-center">
+                    <div className="animate-pulse text-gold-500 font-display text-2xl">Loading luxury...</div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
 
     if (!product) {
         return (
@@ -39,13 +74,8 @@ export default function ProductDetailPage() {
     const inCart = isInCart(product.id);
     const inWishlist = isInWishlist(product.id);
 
-    // Get related products
-    const relatedProducts = products
-        .filter(p => p.category === product.category && p.id !== product.id)
-        .slice(0, 4);
-
-    const discount = product.comparePrice
-        ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
+    const discount = product.compare_price
+        ? Math.round(((parseFloat(product.compare_price) - parseFloat(product.price)) / parseFloat(product.compare_price)) * 100)
         : 0;
 
     return (
@@ -59,7 +89,7 @@ export default function ProductDetailPage() {
                         <span className="mx-2">/</span>
                         <Link href="/products" className="hover:text-gold-500">Shop</Link>
                         <span className="mx-2">/</span>
-                        <Link href={`/${product.category}`} className="hover:text-gold-500 capitalize">{product.category}</Link>
+                        <Link href={`/products?category=${product.categories?.slug}`} className="hover:text-gold-500 capitalize">{product.categories?.name}</Link>
                         <span className="mx-2">/</span>
                         <span className="text-champagne-200">{product.name}</span>
                     </nav>
@@ -72,26 +102,26 @@ export default function ProductDetailPage() {
                         <div className="space-y-4">
                             <div className="relative aspect-square rounded-lg overflow-hidden border border-gold-500/20">
                                 <Image
-                                    src={product.featuredImage}
+                                    src={product.featured_image}
                                     alt={product.name}
                                     fill
                                     priority
                                     className="object-cover"
                                 />
-                                {product.isNew && (
+                                {product.is_featured && (
                                     <span className="absolute top-4 left-4 px-3 py-1 bg-gold-500 text-luxury-black text-xs font-heading uppercase tracking-wider">
-                                        New
+                                        Featured
                                     </span>
                                 )}
-                                {product.isSale && discount > 0 && (
+                                {product.compare_price && discount > 0 && (
                                     <span className="absolute top-4 right-4 px-3 py-1 bg-red-600 text-white text-xs font-heading uppercase tracking-wider">
                                         -{discount}% Off
                                     </span>
                                 )}
                             </div>
-                            {product.images.length > 1 && (
+                            {product.images && product.images.length > 1 && (
                                 <div className="grid grid-cols-4 gap-4">
-                                    {product.images.map((img, i) => (
+                                    {product.images.map((img: string, i: number) => (
                                         <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-gold-500/20 hover:border-gold-500 transition-colors cursor-pointer">
                                             <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" />
                                         </div>
@@ -110,7 +140,7 @@ export default function ProductDetailPage() {
                                     {[...Array(5)].map((_, i) => (
                                         <svg
                                             key={i}
-                                            className={`h-5 w-5 ${i < Math.floor(product.ratingAverage) ? 'text-gold-500' : 'text-silver-700'}`}
+                                            className={`h-5 w-5 ${i < Math.floor(product.rating_average || 0) ? 'text-gold-500' : 'text-silver-700'}`}
                                             fill="currentColor"
                                             viewBox="0 0 20 20"
                                         >
@@ -118,14 +148,14 @@ export default function ProductDetailPage() {
                                         </svg>
                                     ))}
                                 </div>
-                                <span className="text-silver-500 text-sm">{product.ratingAverage} ({product.ratingCount} reviews)</span>
+                                <span className="text-silver-500 text-sm">{product.rating_average || 0} ({product.rating_count || 0} reviews)</span>
                             </div>
 
                             {/* Price */}
                             <div className="mt-6 flex items-baseline gap-3">
-                                <span className="font-display text-4xl text-gold-500">${product.price.toLocaleString()}</span>
-                                {product.comparePrice && product.comparePrice > product.price && (
-                                    <span className="text-xl text-silver-600 line-through">${product.comparePrice.toLocaleString()}</span>
+                                <span className="font-display text-4xl text-gold-500">${parseFloat(product.price).toLocaleString()}</span>
+                                {product.compare_price && parseFloat(product.compare_price) > parseFloat(product.price) && (
+                                    <span className="text-xl text-silver-600 line-through">${parseFloat(product.compare_price).toLocaleString()}</span>
                                 )}
                             </div>
 
@@ -136,22 +166,12 @@ export default function ProductDetailPage() {
                             <div className="mt-8 space-y-3">
                                 <div className="flex justify-between py-3 border-b border-gold-500/10">
                                     <span className="text-silver-500">Material</span>
-                                    <span className="text-champagne-200">{product.material}</span>
-                                </div>
-                                {product.gemstone && (
-                                    <div className="flex justify-between py-3 border-b border-gold-500/10">
-                                        <span className="text-silver-500">Gemstone</span>
-                                        <span className="text-champagne-200">{product.gemstone}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between py-3 border-b border-gold-500/10">
-                                    <span className="text-silver-500">Weight</span>
-                                    <span className="text-champagne-200">{product.weight}</span>
+                                    <span className="text-champagne-200">Gold-Plated Alloy</span>
                                 </div>
                                 <div className="flex justify-between py-3 border-b border-gold-500/10">
                                     <span className="text-silver-500">Availability</span>
-                                    <span className={product.inStock ? 'text-green-500' : 'text-red-500'}>
-                                        {product.inStock ? `In Stock (${product.stockQuantity} left)` : 'Out of Stock'}
+                                    <span className={product.inventory_quantity > 0 ? 'text-green-500' : 'text-red-500'}>
+                                        {product.inventory_quantity > 0 ? `In Stock (${product.inventory_quantity} left)` : 'Out of Stock'}
                                     </span>
                                 </div>
                             </div>
@@ -159,19 +179,19 @@ export default function ProductDetailPage() {
                             {/* Actions */}
                             <div className="mt-8 flex gap-4">
                                 <button
-                                    onClick={() => addItem(product.id)}
-                                    disabled={inCart || !product.inStock}
+                                    onClick={() => addItem(product)}
+                                    disabled={inCart || product.inventory_quantity <= 0}
                                     className={`flex-1 py-4 font-heading text-sm uppercase tracking-widest ${inCart
                                         ? 'bg-silver-700 text-silver-400 cursor-not-allowed'
-                                        : !product.inStock
+                                        : product.inventory_quantity <= 0
                                             ? 'bg-silver-800 text-silver-500 cursor-not-allowed'
                                             : 'btn-luxury'
                                         }`}
                                 >
-                                    {inCart ? 'In Cart' : !product.inStock ? 'Out of Stock' : 'Add to Cart'}
+                                    {inCart ? 'In Cart' : product.inventory_quantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
                                 </button>
                                 <button
-                                    onClick={() => toggleItem(product.id)}
+                                    onClick={() => toggleItem(product)}
                                     className={`w-14 h-14 flex items-center justify-center border rounded ${inWishlist
                                         ? 'bg-gold-500 border-gold-500 text-luxury-black'
                                         : 'border-gold-500/30 text-silver-400 hover:border-gold-500 hover:text-gold-500'
@@ -188,7 +208,7 @@ export default function ProductDetailPage() {
                                 {[
                                     { icon: '🚚', text: 'Free Shipping' },
                                     { icon: '↩️', text: '30-Day Returns' },
-                                    { icon: '💎', text: 'GIA Certified' },
+                                    { icon: '💎', text: 'Quality Assured' },
                                 ].map((item, i) => (
                                     <div key={i} className="text-center p-3 border border-gold-500/10 rounded">
                                         <span className="text-xl">{item.icon}</span>
@@ -200,17 +220,8 @@ export default function ProductDetailPage() {
                     </div>
                 </section>
 
-                {/* Related Products */}
-                {relatedProducts.length > 0 && (
-                    <section className="container mx-auto px-4 py-16 border-t border-gold-500/10">
-                        <h2 className="font-display text-3xl text-champagne-200 mb-8">You May Also Like</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {relatedProducts.map(p => (
-                                <ProductCard key={p.id} product={p} />
-                            ))}
-                        </div>
-                    </section>
-                )}
+                {/* AI Recommendations */}
+                <AIRecommendations productId={product.id} count={4} title="Similar Exquisite Pieces" />
             </main>
             <Footer />
         </div>

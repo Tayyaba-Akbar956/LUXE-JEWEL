@@ -3,13 +3,25 @@ const nextConfig = {
   experimental: {
   },
   images: {
-    domains: [
-      'images.unsplash.com',
-      'example.com',
-      'localhost',
-      '127.0.0.1',
-      'via.placeholder.com',
-      'placehold.co'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      }
     ],
     formats: ['image/webp', 'image/avif'],
     dangerouslyAllowSVG: true,
