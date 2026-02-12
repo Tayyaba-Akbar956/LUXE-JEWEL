@@ -111,15 +111,20 @@ export async function POST(request: Request) {
                 const cerebrasKey = process.env.CEREBRAS_API_KEY?.trim();
                 const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
 
+                console.log('🔑 API Keys status:', {
+                    hasGroq: !!groqKey,
+                    hasCerebras: !!cerebrasKey,
+                    hasOpenRouter: !!openRouterKey,
+                    hasGoogle: !!process.env.GOOGLE_API_KEY
+                });
+
                 // 1. TRY GROQ FIRST (llama-3.3-70b-versatile prioritized)
                 if (groqKey) {
                     const groqModels = [
                         'llama-3.3-70b-versatile',
                         'llama-3.2-11b-vision-preview',
                         'llama-3.2-90b-vision-preview',
-                        'llama-3.3-70b-specdec',
-                        'mixtral-8x7b-32768',
-                        'gemma2-9b-it'
+                        'llama-3.3-70b-specdec'
                     ];
                     for (const modelId of groqModels) {
                         try {
@@ -161,6 +166,8 @@ export async function POST(request: Request) {
                             console.warn(`   ❌ Groq ${modelId} failed:`, e.message);
                         }
                     }
+                } else {
+                    console.log('⏭️ Skipping Groq: No API Key');
                 }
 
                 // 2. TRY CEREBRAS SECOND
@@ -195,18 +202,19 @@ export async function POST(request: Request) {
                                 console.log(`✅ Cerebras (${modelId}) successful`);
                                 break;
                             }
-                        } catch (e) { /* silent fail to next model */ }
+                        } catch (e) { /* silent fail */ }
                     }
+                } else if (!description) {
+                    console.log('⏭️ Skipping Cerebras: No API Key');
                 }
 
                 // 3. TRY OPENROUTER THIRD
                 if (!description && openRouterKey) {
                     console.log('🔄 Falling back to OpenRouter...');
                     const orModels = [
-                        "openai/gpt-oss-20b",
-                        "moonshotai/kimi-k2-instruct",
                         "google/gemini-2.0-flash-lite-preview-02-05:free",
-                        "google/gemini-flash-1.5-8b"
+                        "google/gemini-flash-1.5-8b",
+                        "openai/gpt-4o-mini"
                     ];
                     for (const modelId of orModels) {
                         try {
@@ -214,7 +222,7 @@ export async function POST(request: Request) {
                             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                                 method: 'POST',
                                 headers: {
-                                    'Authorization': `Bearer ${openRouterKey}`, // Correct absolute format
+                                    'Authorization': `Bearer ${openRouterKey}`,
                                     'Content-Type': 'application/json',
                                     'HTTP-Referer': 'https://luxejewel.vercel.app',
                                     'X-Title': 'LuxeJewel AI Search'
@@ -223,12 +231,10 @@ export async function POST(request: Request) {
                                     model: modelId,
                                     messages: [{
                                         role: "user",
-                                        content: modelId.includes('vision') || modelId.includes('gemini') || modelId.includes('flash')
-                                            ? [
-                                                { type: "text", text: visionPrompt },
-                                                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Data}` } }
-                                            ]
-                                            : visionPrompt
+                                        content: [
+                                            { type: "text", text: visionPrompt },
+                                            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Data}` } }
+                                        ]
                                     }],
                                     response_format: { type: "json_object" }
                                 })
@@ -249,12 +255,14 @@ export async function POST(request: Request) {
                             console.warn(`   ❌ OpenRouter ${modelId} failed:`, e.message);
                         }
                     }
+                } else if (!description) {
+                    console.log('⏭️ Skipping OpenRouter: No API Key');
                 }
 
                 // 4. TRY GEMINI SDK
-                if (!description) {
+                if (!description && process.env.GOOGLE_API_KEY) {
                     console.log('🔄 Final fallback to Gemini SDK...');
-                    const geminiModels = ["gemini-2.0-flash-exp", "gemini-1.5-flash-latest"];
+                    const geminiModels = ["gemini-1.5-flash", "gemini-1.5-pro"];
                     for (const modelName of geminiModels) {
                         try {
                             console.log(`🌟 Trying Gemini SDK model: ${modelName}`);
