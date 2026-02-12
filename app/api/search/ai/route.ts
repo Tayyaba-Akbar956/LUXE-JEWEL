@@ -103,7 +103,7 @@ export async function POST(request: Request) {
                 - Stones/Gems (Diamond, Pearl, Emerald, Sapphire, Crystal, CZ, etc.)
                 - Style (Bohemian, Minimalist, Traditional, Modern, Vintage, etc.)
                 - Key visual features (Dangle, Stud, Hoop, Choker, Filigree, Locket, etc.)
-                Return ONLY a JSON object: {"category": "earrings", "description": "detailed professional description"}`;
+                Return ONLY a JSON object: {"category": "category_name", "description": "detailed professional description"}`;
 
                 let description = '';
                 const base64Data = image.includes(',') ? image.split(',')[1] : image;
@@ -118,13 +118,13 @@ export async function POST(request: Request) {
                     hasGoogle: !!process.env.GOOGLE_API_KEY
                 });
 
-                // 1. TRY GROQ FIRST (llama-3.3-70b-versatile prioritized)
+                // 1. TRY GROQ FIRST (Vision models prioritized for images)
                 if (groqKey) {
                     const groqModels = [
-                        'llama-3.3-70b-versatile',
-                        'llama-3.2-11b-vision-preview',
-                        'llama-3.2-90b-vision-preview',
-                        'llama-3.3-70b-specdec'
+                        'llama-3.2-11b-vision-preview', // Vision
+                        'llama-3.2-90b-vision-preview', // Vision
+                        'llama-3.3-70b-versatile',      // Text-only
+                        'llama-3.3-70b-specdec'         // Text-only
                     ];
                     for (const modelId of groqModels) {
                         try {
