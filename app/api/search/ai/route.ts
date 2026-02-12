@@ -107,13 +107,65 @@ export async function POST(request: Request) {
 
                 let description = '';
                 const base64Data = image.includes(',') ? image.split(',')[1] : image;
-                const cerebrasKey = process.env.CEREBRAS_API_KEY?.trim();
                 const groqKey = process.env.GROQ_API_KEY?.trim();
+                const cerebrasKey = process.env.CEREBRAS_API_KEY?.trim();
                 const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
 
-                // 1. TRY CEREBRAS VISION
-                if (cerebrasKey) {
-                    const cerebrasModels = ['llama3.2-11b-vision', 'llama-3.3-70b']; // Adjusting to common IDs
+                // 1. TRY GROQ FIRST (llama-3.3-70b-versatile prioritized)
+                if (groqKey) {
+                    const groqModels = [
+                        'llama-3.3-70b-versatile',
+                        'llama-3.2-11b-vision-preview',
+                        'llama-3.2-90b-vision-preview',
+                        'llama-3.3-70b-specdec',
+                        'mixtral-8x7b-32768',
+                        'gemma2-9b-it'
+                    ];
+                    for (const modelId of groqModels) {
+                        try {
+                            console.log(`🚀 Attempting Groq (${modelId})...`);
+                            const isVision = modelId.includes('vision');
+                            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${groqKey}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    model: modelId,
+                                    messages: [{
+                                        role: "user",
+                                        content: isVision
+                                            ? [
+                                                { type: "text", text: visionPrompt },
+                                                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Data}` } }
+                                            ]
+                                            : visionPrompt
+                                    }],
+                                    response_format: { type: "json_object" }
+                                })
+                            });
+
+                            const data = await response.json();
+                            if (response.ok && data.choices?.[0]?.message?.content) {
+                                const content = data.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim();
+                                const parsed = JSON.parse(content);
+                                description = parsed.description;
+                                detectedCategory = parsed.category;
+                                console.log(`✅ Groq (${modelId}) successful`);
+                                break;
+                            } else {
+                                console.warn(`   ❌ Groq ${modelId} error:`, data.error?.message || response.statusText);
+                            }
+                        } catch (e: any) {
+                            console.warn(`   ❌ Groq ${modelId} failed:`, e.message);
+                        }
+                    }
+                }
+
+                // 2. TRY CEREBRAS SECOND
+                if (!description && cerebrasKey) {
+                    const cerebrasModels = ['llama3.2-11b-vision', 'llama-3.3-70b'];
                     for (const modelId of cerebrasModels) {
                         try {
                             console.log(`🚀 Attempting Cerebras (${modelId})...`);
@@ -147,61 +199,7 @@ export async function POST(request: Request) {
                     }
                 }
 
-                // 2. TRY GROQ VISION / REASONING
-                if (!description && groqKey) {
-                    const groqModels = [
-                        'llama-3.2-11b-vision-preview',
-                        'llama-3.2-90b-vision-preview',
-                        'llama-3.3-70b-versatile',
-                        'llama-3.3-70b-specdec',
-                        'moonshotai/kimi-k2-instruct-0105',
-                        'moonshotai/kimi-k2-instruct',
-                        'openai/gpt-oss-20b',
-                        'openai/gpt-oss-120b'
-                    ];
-                    for (const modelId of groqModels) {
-                        try {
-                            console.log(`🚀 Attempting Groq (${modelId})...`);
-                            const isVision = modelId.includes('vision');
-                            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${groqKey}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    model: modelId,
-                                    messages: [{
-                                        role: "user",
-                                        content: isVision
-                                            ? [
-                                                { type: "text", text: visionPrompt },
-                                                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Data}` } }
-                                            ]
-                                            : visionPrompt // Text-only models get string
-                                    }],
-                                    response_format: { type: "json_object" }
-                                })
-                            });
-
-                            const data = await response.json();
-                            if (response.ok && data.choices?.[0]?.message?.content) {
-                                const content = data.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim();
-                                const parsed = JSON.parse(content);
-                                description = parsed.description;
-                                detectedCategory = parsed.category;
-                                console.log(`✅ Groq (${modelId}) successful`);
-                                break;
-                            } else {
-                                console.warn(`   ❌ Groq ${modelId} error:`, data.error?.message || response.statusText);
-                            }
-                        } catch (e: any) {
-                            console.warn(`   ❌ Groq ${modelId} failed:`, e.message);
-                        }
-                    }
-                }
-
-                // 3. TRY OPENROUTER
+                // 3. TRY OPENROUTER THIRD
                 if (!description && openRouterKey) {
                     console.log('🔄 Falling back to OpenRouter...');
                     const orModels = [
