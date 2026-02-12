@@ -121,15 +121,15 @@ export async function POST(request: Request) {
                 // 1. TRY GROQ FIRST (Vision models prioritized for images)
                 if (groqKey) {
                     const groqModels = [
-                        'llama-3.2-11b-vision-preview', // Vision
-                        'llama-3.2-90b-vision-preview', // Vision
-                        'llama-3.3-70b-versatile',      // Text-only
-                        'llama-3.3-70b-specdec'         // Text-only
+                        'meta-llama/llama-4-scout-17b-16e-instruct',    // New Llama 4 Vision/Scout
+                        'meta-llama/llama-4-maverick-17b-128e-instruct',// New Llama 4 Vision/Maverick
+                        'llama-3.2-11b-vision-preview',                 // Legacy (in case it restores)
+                        'llama-3.2-90b-vision-preview'                  // Legacy
                     ];
                     for (const modelId of groqModels) {
                         try {
                             console.log(`🚀 Attempting Groq (${modelId})...`);
-                            const isVision = modelId.includes('vision');
+                            const isVision = modelId.includes('vision') || modelId.includes('scout') || modelId.includes('maverick');
                             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                                 method: 'POST',
                                 headers: {
